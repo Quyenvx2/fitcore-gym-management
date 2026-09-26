@@ -1,6 +1,7 @@
 package com.fitcore.backend;
 
-import com.fitcore.backend.entity.TaiKhoan;
+import com.fitcore.backend.dto.TaiKhoanDTO;
+
 import com.fitcore.backend.service.TaiKhoanService;
 
 import org.springframework.boot.CommandLineRunner;
@@ -21,13 +22,13 @@ public class BackendApplication {
     CommandLineRunner testDatabase(TaiKhoanService service) {
         return args -> {
 
-            List<TaiKhoan> danhSach = service.layDanhSachTaiKhoan();
+            List<TaiKhoanDTO> danhSach = service.layDanhSachTaiKhoan();
 
             System.out.println("=================================");
             System.out.println("KET NOI DATABASE THANH CONG");
             System.out.println("So tai khoan: " + danhSach.size());
 
-            for (TaiKhoan tk : danhSach) {
+            for (TaiKhoanDTO tk : danhSach) {
                 System.out.println(
                     tk.getMaTk() + " - " +
                     tk.getTenDangNhap() + " - " +

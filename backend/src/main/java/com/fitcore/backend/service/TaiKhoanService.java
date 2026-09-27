@@ -5,16 +5,17 @@ import com.fitcore.backend.dto.TaiKhoanDTO;
 import com.fitcore.backend.entity.TaiKhoan;
 import com.fitcore.backend.repository.TaiKhoanRepository;
 import org.springframework.stereotype.Service;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 @Service
 public class TaiKhoanService {
 
     private final TaiKhoanRepository repository;
-
-    public TaiKhoanService(TaiKhoanRepository repository) {
+    private final PasswordEncoder passwordEncoder;
+    public TaiKhoanService(TaiKhoanRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder=passwordEncoder;
     }
 
     public List<TaiKhoanDTO> layDanhSachTaiKhoan() {
@@ -40,7 +41,7 @@ public class TaiKhoanService {
     public TaiKhoanDTO taoTaiKhoan(TaiKhoanRequestDTO request){
             TaiKhoan tk = new TaiKhoan();
             tk.setTenDangNhap(request.getTenDangNhap());
-            tk.setMatKhau(request.getMatKhau());
+            tk.setMatKhau(passwordEncoder.encode(request.getMatKhau()));
             tk.setVaiTro(request.getVaiTro());
             tk.setTrangThai(request.getTrangThai());
 
@@ -61,7 +62,7 @@ public class TaiKhoanService {
     }
 
     tk.setTenDangNhap(request.getTenDangNhap());
-    tk.setMatKhau(request.getMatKhau());
+    tk.setMatKhau(passwordEncoder.encode(request.getMatKhau()));
     tk.setVaiTro(request.getVaiTro());
     tk.setTrangThai(request.getTrangThai());
 

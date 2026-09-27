@@ -1,6 +1,7 @@
 package com.fitcore.backend.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -35,5 +36,20 @@ public class GlobalExceptionHandler {
         response.put("errors", errors);
 
         return response;
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessException(
+            BusinessException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("status", ex.getStatus().value());
+        response.put("code", ex.getCode());
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity
+                .status(ex.getStatus())
+                .body(response);
     }
 }

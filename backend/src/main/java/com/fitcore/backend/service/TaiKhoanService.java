@@ -1,5 +1,6 @@
 package com.fitcore.backend.service;
 
+import com.fitcore.backend.dto.TaiKhoanLoginRequestDTO;
 import com.fitcore.backend.dto.TaiKhoanRequestDTO;
 import com.fitcore.backend.dto.TaiKhoanDTO;
 import com.fitcore.backend.entity.TaiKhoan;
@@ -76,5 +77,19 @@ public class TaiKhoanService {
     }
     public void xoaTaiKhoan (Integer id){
         repository.deleteById(id);
+    }
+
+    public TaiKhoanDTO dangnhap(TaiKhoanLoginRequestDTO request){
+        TaiKhoan tk = repository.findByTenDangNhap(request.getTenDangNhap()).orElse(null);
+        if(tk==null){
+            return null;
+        }
+        if(!tk.getTrangThai().equals("Active")) return null;
+
+        boolean matKhauDung = passwordEncoder.matches(request.getMatKhau(), tk.getMatKhau());
+
+        if(!matKhauDung) return null;
+
+        return new TaiKhoanDTO(tk.getMaTk(),tk.getTenDangNhap(),tk.getVaiTro(),tk.getTrangThai());
     }
 }

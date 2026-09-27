@@ -1,5 +1,5 @@
 package com.fitcore.backend.controller;
-import com.fitcore.backend.dto.TaiKhoanDTO;
+import com.fitcore.backend.dto.TaiKhoanLoginResponseDTO;
 import com.fitcore.backend.dto.TaiKhoanLoginRequestDTO;
 import com.fitcore.backend.service.AuthService;
 import jakarta.validation.Valid;
@@ -14,9 +14,9 @@ public class AuthController {
     this.authService = authService;
     }
     @PostMapping("/login")
-    public TaiKhoanDTO dangNhap(
-            @Valid @RequestBody TaiKhoanLoginRequestDTO request) {
+    public TaiKhoanLoginResponseDTO dangNhap(
+        @Valid @RequestBody TaiKhoanLoginRequestDTO request) {
 
-        return authService.dangNhap(request);
+    return authService.dangNhap(request);
     }
 }

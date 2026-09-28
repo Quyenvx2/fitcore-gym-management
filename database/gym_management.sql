@@ -100,7 +100,12 @@ CREATE TABLE `DANG_KY_GOI`(
     `ngay_bat_dau` DATE NOT NULL,
     `ngay_het_han` DATE NOT NULL,
     `ngay_dang_ky` DATE NOT NULL,
-    `trang_thai` ENUM('Đang chờ kích hoạt', 'Đang sử dụng', 'Đã hết hạn') NOT NULL,
+    `trang_thai` ENUM(
+        'Đang chờ kích hoạt',
+        'Đang sử dụng',
+        'Đã hết hạn',
+        'Đã hủy'
+    ) NOT NULL,
     FOREIGN KEY(`ma_goi`) REFERENCES `GOI_TAP`(`ma_goi`),
     FOREIGN KEY(`ma_hv`) REFERENCES `HOI_VIEN`(`ma_hv`)
 );

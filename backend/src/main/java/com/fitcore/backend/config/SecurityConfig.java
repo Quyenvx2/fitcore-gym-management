@@ -16,7 +16,6 @@ public class SecurityConfig {
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter) {
-
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
@@ -25,10 +24,8 @@ public class SecurityConfig {
             HttpSecurity http) throws Exception {
 
         http
-                // REST API không sử dụng CSRF
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Không sử dụng session để lưu trạng thái đăng nhập
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
@@ -37,26 +34,34 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Login không cần JWT
                         .requestMatchers("/api/auth/**")
                         .permitAll()
 
-                        // Quản lý tài khoản chỉ dành cho nhân viên
-                        .requestMatchers("/api/tai-khoan/**")
+                        .requestMatchers(
+                                "/api/tai-khoan/**",
+                                "/api/hoi-vien/**",
+                                "/api/goi-tap/**"
+                        )
                         .hasAuthority("NHAN_VIEN")
 
-                        // Các API khác cần đăng nhập
+                        .requestMatchers(
+                                "/api/dang-ky-goi/cua-toi/**"
+                        )
+                        .hasAuthority("HOI_VIEN")
+
+                        .requestMatchers(
+                                "/api/dang-ky-goi/**"
+                        )
+                        .hasAuthority("NHAN_VIEN")
+
                         .anyRequest()
                         .authenticated()
                 )
 
-                // Không dùng form login
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                // Không dùng Basic Auth
                 .httpBasic(AbstractHttpConfigurer::disable)
 
-                // JWT Filter chạy trước filter xác thực mặc định
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

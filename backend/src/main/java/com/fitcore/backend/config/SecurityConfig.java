@@ -36,7 +36,9 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/auth/**")
                         .permitAll()
-
+                        .requestMatchers(
+                        "/api/hoi-vien/cua-toi/**")
+                        .hasAuthority("HOI_VIEN")
                         .requestMatchers(
                                 "/api/tai-khoan/**",
                                 "/api/hoi-vien/**",
@@ -53,7 +55,14 @@ public class SecurityConfig {
                                 "/api/dang-ky-goi/**"
                         )
                         .hasAuthority("NHAN_VIEN")
+                        
+                        .requestMatchers(
+                                "/api/pt/cua-toi/**")
+                        .hasAuthority("PT")
 
+                        .requestMatchers(
+                            "/api/pt/**")
+                        .hasAuthority("NHAN_VIEN")
                         .anyRequest()
                         .authenticated()
                 )

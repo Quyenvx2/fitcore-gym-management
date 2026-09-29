@@ -3,6 +3,9 @@ package com.fitcore.backend.controller;
 import com.fitcore.backend.dto.HoiVienRequestDTO;
 import com.fitcore.backend.dto.HoiVienResponseDTO;
 import com.fitcore.backend.service.HoiVienService;
+
+import com.fitcore.backend.dto.HoanThienHoiVienRequestDTO;
+import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +48,15 @@ public class HoiVienController {
     }
 
 
+    @PostMapping("/cua-toi")
+    public HoiVienResponseDTO hoanThienHoSo(
+        @Valid @RequestBody HoanThienHoiVienRequestDTO request,
+        Authentication authentication) {
 
+    return service.hoanThienHoSo(
+            request,
+            authentication.getName());
+    }
 
     @PutMapping("/{id}")
     public HoiVienResponseDTO capNhatHoiVien(

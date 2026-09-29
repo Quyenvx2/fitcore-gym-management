@@ -1,5 +1,7 @@
 package com.fitcore.backend.service;
 
+import com.fitcore.backend.dto.TaiKhoanDTO;
+import com.fitcore.backend.dto.TaiKhoanDangKyRequestDTO;
 import com.fitcore.backend.dto.TaiKhoanLoginRequestDTO;
 import com.fitcore.backend.dto.TaiKhoanLoginResponseDTO;
 import com.fitcore.backend.entity.TaiKhoan;
@@ -80,4 +82,33 @@ public class AuthService {
                 tk.getTrangThai()
         );
     }
+
+    public TaiKhoanDTO dangKy(
+        TaiKhoanDangKyRequestDTO request) {
+
+    if (repository.findByTenDangNhap(request.getTenDangNhap()).isPresent()) {
+        throw new BusinessException(
+                "AUTH_USERNAME_ALREADY_EXISTS",
+                "Tên đăng nhập đã tồn tại",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    TaiKhoan tk = new TaiKhoan();
+
+    tk.setTenDangNhap(request.getTenDangNhap());
+    tk.setMatKhau(
+            passwordEncoder.encode(request.getMatKhau())
+    );
+    tk.setVaiTro("HOI_VIEN");
+    tk.setTrangThai("Active");
+
+    TaiKhoan saved = repository.save(tk);
+
+    return new TaiKhoanDTO(
+            saved.getMaTk(),
+            saved.getTenDangNhap(),
+            saved.getVaiTro(),
+            saved.getTrangThai());
+        }
 }

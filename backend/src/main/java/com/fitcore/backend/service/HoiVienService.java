@@ -9,6 +9,7 @@ import com.fitcore.backend.repository.HoiVienRepository;
 import com.fitcore.backend.repository.TaiKhoanRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import com.fitcore.backend.dto.HoanThienHoiVienRequestDTO;
 
 import java.util.List;
 
@@ -288,4 +289,72 @@ public class HoiVienService {
                 hoiVien.getTrangThai()
         );
     }
+    public HoiVienResponseDTO hoanThienHoSo(
+        HoanThienHoiVienRequestDTO request,
+        String tenDangNhap) {
+
+    TaiKhoan taiKhoan = taiKhoanRepository
+            .findByTenDangNhap(tenDangNhap)
+            .orElseThrow(() -> new BusinessException(
+                    "TAI_KHOAN_NOT_FOUND",
+                    "Không tìm thấy tài khoản",
+                    HttpStatus.NOT_FOUND
+            ));
+
+    if (!"HOI_VIEN".equals(taiKhoan.getVaiTro())) {
+        throw new BusinessException(
+                "AUTH_INVALID_ROLE",
+                "Tài khoản không phải hội viên",
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+    if (hoiVienRepository
+            .findByTaiKhoan_MaTk(taiKhoan.getMaTk())
+            .isPresent()) {
+
+        throw new BusinessException(
+                "HOI_VIEN_PROFILE_EXISTS",
+                "Tài khoản đã có hồ sơ hội viên",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    if (hoiVienRepository
+            .findByCccd(request.getCccd())
+            .isPresent()) {
+
+        throw new BusinessException(
+                "HOI_VIEN_CCCD_EXISTS",
+                "CCCD đã tồn tại",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    if (hoiVienRepository
+            .findBySdt(request.getSdt())
+            .isPresent()) {
+
+        throw new BusinessException(
+                "HOI_VIEN_SDT_EXISTS",
+                "Số điện thoại đã tồn tại",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    HoiVien hoiVien = new HoiVien();
+
+    hoiVien.setTaiKhoan(taiKhoan);
+    hoiVien.setCccd(request.getCccd());
+    hoiVien.setHoTen(request.getHoTen());
+    hoiVien.setNgaySinh(request.getNgaySinh());
+    hoiVien.setGioiTinh(request.getGioiTinh());
+    hoiVien.setDiaChi(request.getDiaChi());
+    hoiVien.setSdt(request.getSdt());
+    hoiVien.setTrangThai("Đang hoạt động");
+
+    HoiVien saved = hoiVienRepository.save(hoiVien);
+
+    return chuyenSangResponseDTO(saved);
+}
 }

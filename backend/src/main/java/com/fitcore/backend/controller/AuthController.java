@@ -1,4 +1,6 @@
 package com.fitcore.backend.controller;
+import com.fitcore.backend.dto.TaiKhoanDTO;
+import com.fitcore.backend.dto.TaiKhoanDangKyRequestDTO;
 import com.fitcore.backend.dto.TaiKhoanLoginResponseDTO;
 import com.fitcore.backend.dto.TaiKhoanLoginRequestDTO;
 import com.fitcore.backend.service.AuthService;
@@ -18,5 +20,10 @@ public class AuthController {
         @Valid @RequestBody TaiKhoanLoginRequestDTO request) {
 
     return authService.dangNhap(request);
+    }
+    @PostMapping("/register")
+    public TaiKhoanDTO dangKy(
+        @Valid @RequestBody TaiKhoanDangKyRequestDTO request) {
+    return authService.dangKy(request);
     }
 }

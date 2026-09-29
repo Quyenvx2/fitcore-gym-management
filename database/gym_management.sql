@@ -934,3 +934,15 @@ SELECT
 
 FROM nums;
 
+UPDATE LOP_HOC
+SET thu_hoc = CASE ma_lop
+    WHEN 1 THEN '2,4'
+    WHEN 2 THEN '3,5'
+    WHEN 3 THEN '2,6'
+    WHEN 4 THEN '4,7'
+    WHEN 5 THEN '3'
+    WHEN 6 THEN '5,7'
+    WHEN 7 THEN '2'
+    WHEN 8 THEN '6'
+END
+WHERE ma_lop BETWEEN 1 AND 8;

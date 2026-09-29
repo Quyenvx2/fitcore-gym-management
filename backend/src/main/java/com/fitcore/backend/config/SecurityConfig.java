@@ -3,6 +3,7 @@ package com.fitcore.backend.config;
 import com.fitcore.backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,35 +35,68 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                       
                         .requestMatchers("/api/auth/**")
                         .permitAll()
+
+
+                       
                         .requestMatchers(
-                        "/api/hoi-vien/cua-toi/**")
+                                "/api/hoi-vien/cua-toi/**"
+                        )
                         .hasAuthority("HOI_VIEN")
+
+
+                      
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/lop-hoc/*/buoi-hoc"
+                        )
+                        .hasAnyAuthority(
+                                "NHAN_VIEN",
+                                "PT",
+                                "HOI_VIEN"
+                        )
+
+
                         .requestMatchers(
                                 "/api/tai-khoan/**",
                                 "/api/hoi-vien/**",
-                                "/api/goi-tap/**"
+                                "/api/goi-tap/**",
+                                "/api/phong-tap/**",
+                                "/api/lop-hoc/**"
                         )
                         .hasAuthority("NHAN_VIEN")
 
+
+                      
                         .requestMatchers(
                                 "/api/dang-ky-goi/cua-toi/**"
                         )
                         .hasAuthority("HOI_VIEN")
 
+
+                       
                         .requestMatchers(
                                 "/api/dang-ky-goi/**"
                         )
                         .hasAuthority("NHAN_VIEN")
+
+
                         
                         .requestMatchers(
-                                "/api/pt/cua-toi/**")
+                                "/api/pt/cua-toi/**"
+                        )
                         .hasAuthority("PT")
 
+
                         .requestMatchers(
-                            "/api/pt/**")
+                                "/api/pt/**"
+                        )
                         .hasAuthority("NHAN_VIEN")
+
+
+                      
                         .anyRequest()
                         .authenticated()
                 )

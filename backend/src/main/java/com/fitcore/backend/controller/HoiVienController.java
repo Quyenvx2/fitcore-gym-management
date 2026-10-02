@@ -75,4 +75,26 @@ public class HoiVienController {
 
         service.xoaHoiVien(id);
     }
+
+
+    @GetMapping("/cua-toi")
+    public HoiVienResponseDTO layHoSoCuaToi(
+        Authentication authentication) {
+
+    return service.layHoiVienCuaToi(
+            authentication.getName()
+    );
+    }
+
+
+   @PutMapping("/cua-toi")
+public HoiVienResponseDTO capNhatHoSoCuaToi(
+        @Valid @RequestBody HoanThienHoiVienRequestDTO request,
+        Authentication authentication) {
+
+    return service.capNhatHoSoCuaToi(
+            request,
+            authentication.getName()
+    );
+}
 }

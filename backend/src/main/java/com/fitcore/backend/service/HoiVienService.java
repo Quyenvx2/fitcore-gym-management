@@ -357,4 +357,99 @@ public class HoiVienService {
 
     return chuyenSangResponseDTO(saved);
 }
+
+
+public HoiVienResponseDTO layHoiVienCuaToi(String tenDangNhap) {
+
+    TaiKhoan taiKhoan = taiKhoanRepository
+            .findByTenDangNhap(tenDangNhap)
+            .orElseThrow(() -> new BusinessException(
+                    "TAI_KHOAN_NOT_FOUND",
+                    "Không tìm thấy tài khoản",
+                    HttpStatus.NOT_FOUND
+            ));
+
+    if (!"HOI_VIEN".equals(taiKhoan.getVaiTro())) {
+        throw new BusinessException(
+                "AUTH_INVALID_ROLE",
+                "Tài khoản không phải hội viên",
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+    HoiVien hoiVien = hoiVienRepository
+            .findByTaiKhoan_MaTk(taiKhoan.getMaTk())
+            .orElseThrow(() -> new BusinessException(
+                    "HOI_VIEN_NOT_FOUND",
+                    "Tài khoản chưa có hồ sơ hội viên",
+                    HttpStatus.NOT_FOUND
+            ));
+
+    return chuyenSangResponseDTO(hoiVien);
+}
+
+public HoiVienResponseDTO capNhatHoSoCuaToi(
+        HoanThienHoiVienRequestDTO request,
+        String tenDangNhap) {
+
+    TaiKhoan taiKhoan = taiKhoanRepository
+            .findByTenDangNhap(tenDangNhap)
+            .orElseThrow(() -> new BusinessException(
+                    "TAI_KHOAN_NOT_FOUND",
+                    "Không tìm thấy tài khoản",
+                    HttpStatus.NOT_FOUND
+            ));
+
+    if (!"HOI_VIEN".equals(taiKhoan.getVaiTro())) {
+        throw new BusinessException(
+                "AUTH_INVALID_ROLE",
+                "Tài khoản không phải hội viên",
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+    HoiVien hoiVien = hoiVienRepository
+            .findByTaiKhoan_MaTk(taiKhoan.getMaTk())
+            .orElseThrow(() -> new BusinessException(
+                    "HOI_VIEN_NOT_FOUND",
+                    "Tài khoản chưa có hồ sơ hội viên",
+                    HttpStatus.NOT_FOUND
+            ));
+
+    // Kiểm tra CCCD có bị trùng không
+    hoiVienRepository.findByCccd(request.getCccd())
+            .ifPresent(existing -> {
+                if (!existing.getMaHv().equals(hoiVien.getMaHv())) {
+                    throw new BusinessException(
+                            "CCCD_ALREADY_EXISTS",
+                            "CCCD đã được sử dụng",
+                            HttpStatus.CONFLICT
+                    );
+                }
+            });
+
+    // Kiểm tra SĐT có bị trùng không
+    hoiVienRepository.findBySdt(request.getSdt())
+            .ifPresent(existing -> {
+                if (!existing.getMaHv().equals(hoiVien.getMaHv())) {
+                    throw new BusinessException(
+                            "PHONE_ALREADY_EXISTS",
+                            "Số điện thoại đã được sử dụng",
+                            HttpStatus.CONFLICT
+                    );
+                }
+            });
+
+    hoiVien.setCccd(request.getCccd());
+    hoiVien.setHoTen(request.getHoTen());
+    hoiVien.setNgaySinh(request.getNgaySinh());
+    hoiVien.setGioiTinh(request.getGioiTinh());
+    hoiVien.setDiaChi(request.getDiaChi());
+    hoiVien.setSdt(request.getSdt());
+
+    HoiVien saved = hoiVienRepository.save(hoiVien);
+
+    return chuyenSangResponseDTO(saved);
+}
+
 }

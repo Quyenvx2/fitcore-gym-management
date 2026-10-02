@@ -100,7 +100,9 @@ public class DangKyGoiService {
                         )
                 );
 
-        List<DangKyGoi> dangKyDangHoatDong =
+           LocalDate homNay = LocalDate.now();
+
+List<DangKyGoi> dangKyDangHoatDong =
         dangKyGoiRepository
                 .findByHoiVien_MaHvAndTrangThaiIn(
                         hoiVien.getMaHv(),
@@ -110,12 +112,22 @@ public class DangKyGoiService {
                         )
                 );
 
-        if (!dangKyDangHoatDong.isEmpty()) {
-                throw new BusinessException(
+boolean coGoiDangSuDung = dangKyDangHoatDong.stream()
+        .anyMatch(dk ->
+                "Đang chờ kích hoạt".equals(dk.getTrangThai())
+                        || (
+                        "Đang sử dụng".equals(dk.getTrangThai())
+                                && !dk.getNgayHetHan().isBefore(homNay)
+                )
+        );
+
+if (coGoiDangSuDung) {
+    throw new BusinessException(
             "HOI_VIEN_ALREADY_HAS_PACKAGE",
             "Hội viên đã có một gói tập đang chờ kích hoạt hoặc đang sử dụng",
-            HttpStatus.BAD_REQUEST);
-        }        
+            HttpStatus.BAD_REQUEST
+    );
+}
 
         GoiTap goiTap = goiTapRepository
                 .findById(request.getMaGoi())
@@ -182,7 +194,9 @@ public class DangKyGoiService {
                     )
             );
     
-        List<DangKyGoi> dangKyDangHoatDong =
+   LocalDate homNay = LocalDate.now();
+
+List<DangKyGoi> dangKyDangHoatDong =
         dangKyGoiRepository
                 .findByHoiVien_MaHvAndTrangThaiIn(
                         hoiVien.getMaHv(),
@@ -192,12 +206,21 @@ public class DangKyGoiService {
                         )
                 );
 
-        if (!dangKyDangHoatDong.isEmpty()) {
-            throw new BusinessException(
+boolean coGoiDangSuDung = dangKyDangHoatDong.stream()
+        .anyMatch(dk ->
+                "Đang chờ kích hoạt".equals(dk.getTrangThai())
+                        || (
+                        "Đang sử dụng".equals(dk.getTrangThai())
+                                && !dk.getNgayHetHan().isBefore(homNay)
+                )
+        );
+
+if (coGoiDangSuDung) {
+    throw new BusinessException(
             "HOI_VIEN_ALREADY_HAS_PACKAGE",
             "Hội viên đã có một gói tập đang chờ kích hoạt hoặc đang sử dụng",
             HttpStatus.BAD_REQUEST
-        );
+    );
 }
     
     GoiTap goiTap = goiTapRepository
@@ -291,6 +314,15 @@ public class DangKyGoiService {
                     HttpStatus.BAD_REQUEST
             );
         }
+        LocalDate homNay = LocalDate.now();
+
+if (dangKyGoi.getNgayHetHan().isBefore(homNay)) {
+    throw new BusinessException(
+            "PACKAGE_EXPIRED",
+            "Gói tập đã hết hạn, không thể kích hoạt",
+            HttpStatus.BAD_REQUEST
+    );
+}
 
         List<DangKyGoi> dangKyDangSuDung =
         dangKyGoiRepository

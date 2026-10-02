@@ -79,7 +79,7 @@ public class TaiKhoanService {
         repository.deleteById(id);
     }
 
-    public TaiKhoanDTO dangnhap(TaiKhoanLoginRequestDTO request){
+    public TaiKhoanDTO dangNhap(TaiKhoanLoginRequestDTO request){
         TaiKhoan tk = repository.findByTenDangNhap(request.getTenDangNhap()).orElse(null);
         if(tk==null){
             return null;

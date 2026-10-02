@@ -14,7 +14,7 @@ public class GoiTapRequestDTO {
     private BigDecimal giaTien;
 
     @NotNull(message = "Số buổi PT không được để trống")
-    @Positive(message = "Số buổi PT phải lớn hơn 0")
+    @PositiveOrZero(message = "Số buổi PT không được âm")
     private Integer soBuoiPt;
 
     @NotBlank(message = "Trạng thái không được để trống")

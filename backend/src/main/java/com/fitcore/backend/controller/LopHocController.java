@@ -6,7 +6,6 @@ import com.fitcore.backend.dto.LopHocResponseDTO;
 import com.fitcore.backend.service.LopHocService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import com.fitcore.backend.dto.BuoiHocResponseDTO;
 
 import java.util.List;
 

@@ -81,20 +81,35 @@ public class LopHocService {
         }
 
   
-        PhongTap phongTap = phongTapRepository.findById(request.getMaPhong())
-                .orElseThrow(() -> new BusinessException(
-                        "PHONG_NOT_FOUND",
-                        "Không tìm thấy phòng tập",
-                        HttpStatus.NOT_FOUND
-                ));
+       PhongTap phongTap = phongTapRepository.findById(request.getMaPhong())
+        .orElseThrow(() -> new BusinessException(
+                "PHONG_NOT_FOUND",
+                "Không tìm thấy phòng tập",
+                HttpStatus.NOT_FOUND
+        ));
 
-    
-        Pt pt = ptRepository.findById(request.getMaPt())
-                .orElseThrow(() -> new BusinessException(
-                        "PT_NOT_FOUND",
-                        "Không tìm thấy PT",
-                        HttpStatus.NOT_FOUND
-                ));
+if ("Bảo trì".equals(phongTap.getTrangThai())) {
+    throw new BusinessException(
+            "PHONG_UNAVAILABLE",
+            "Phòng tập đang bảo trì, không thể sử dụng cho lớp học",
+            HttpStatus.BAD_REQUEST
+    );
+}
+
+Pt pt = ptRepository.findById(request.getMaPt())
+        .orElseThrow(() -> new BusinessException(
+                "PT_NOT_FOUND",
+                "Không tìm thấy PT",
+                HttpStatus.NOT_FOUND
+        ));
+
+if (!"Đang làm việc".equals(pt.getTrangThai())) {
+    throw new BusinessException(
+            "PT_UNAVAILABLE",
+            "PT hiện không làm việc, không thể phân công cho lớp",
+            HttpStatus.BAD_REQUEST
+    );
+}
 
     
         LopHoc lopHoc = new LopHoc();
@@ -151,19 +166,34 @@ public class LopHocService {
 
    
         PhongTap phongTap = phongTapRepository.findById(request.getMaPhong())
-                .orElseThrow(() -> new BusinessException(
-                        "PHONG_NOT_FOUND",
-                        "Không tìm thấy phòng tập",
-                        HttpStatus.NOT_FOUND
-                ));
+        .orElseThrow(() -> new BusinessException(
+                "PHONG_NOT_FOUND",
+                "Không tìm thấy phòng tập",
+                HttpStatus.NOT_FOUND
+        ));
 
-       
-        Pt pt = ptRepository.findById(request.getMaPt())
-                .orElseThrow(() -> new BusinessException(
-                        "PT_NOT_FOUND",
-                        "Không tìm thấy PT",
-                        HttpStatus.NOT_FOUND
-                ));
+if ("Bảo trì".equals(phongTap.getTrangThai())) {
+    throw new BusinessException(
+            "PHONG_UNAVAILABLE",
+            "Phòng tập đang bảo trì, không thể sử dụng cho lớp học",
+            HttpStatus.BAD_REQUEST
+    );
+}
+
+Pt pt = ptRepository.findById(request.getMaPt())
+        .orElseThrow(() -> new BusinessException(
+                "PT_NOT_FOUND",
+                "Không tìm thấy PT",
+                HttpStatus.NOT_FOUND
+        ));
+
+if (!"Đang làm việc".equals(pt.getTrangThai())) {
+    throw new BusinessException(
+            "PT_UNAVAILABLE",
+            "PT hiện không làm việc, không thể phân công cho lớp",
+            HttpStatus.BAD_REQUEST
+    );
+}
 
         lopHoc.setPhongTap(phongTap);
         lopHoc.setPt(pt);

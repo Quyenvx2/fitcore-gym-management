@@ -35,10 +35,9 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                       
+                        
                         .requestMatchers("/api/auth/**")
                         .permitAll()
-
 
                        
                         .requestMatchers(
@@ -46,8 +45,6 @@ public class SecurityConfig {
                         )
                         .hasAuthority("HOI_VIEN")
 
-
-                      
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/lop-hoc/*/buoi-hoc"
@@ -57,8 +54,18 @@ public class SecurityConfig {
                                 "PT",
                                 "HOI_VIEN"
                         )
-
-
+                        .requestMatchers(
+                         HttpMethod.GET,
+                         "/api/lop-hoc",
+                         "/api/lop-hoc/*"
+                        )
+                        .hasAnyAuthority(
+                         "NHAN_VIEN",
+                                "PT",
+                        "HOI_VIEN"
+                        )
+                        .requestMatchers(HttpMethod.GET, "/api/goi-tap", "/api/goi-tap/**")
+                        .hasAnyAuthority("NHAN_VIEN", "HOI_VIEN")
                         .requestMatchers(
                                 "/api/tai-khoan/**",
                                 "/api/hoi-vien/**",
@@ -67,36 +74,91 @@ public class SecurityConfig {
                                 "/api/lop-hoc/**"
                         )
                         .hasAuthority("NHAN_VIEN")
-
-
-                      
                         .requestMatchers(
                                 "/api/dang-ky-goi/cua-toi/**"
                         )
                         .hasAuthority("HOI_VIEN")
-
-
-                       
                         .requestMatchers(
                                 "/api/dang-ky-goi/**"
                         )
                         .hasAuthority("NHAN_VIEN")
+                        .requestMatchers(
+                         "/api/dang-ky-lop/cua-toi/**")
+                        .hasAuthority("HOI_VIEN")
 
-
-                        
                         .requestMatchers(
                                 "/api/pt/cua-toi/**"
                         )
                         .hasAuthority("PT")
-
-
                         .requestMatchers(
                                 "/api/pt/**"
                         )
                         .hasAuthority("NHAN_VIEN")
 
-
                       
+                        .requestMatchers(
+                                "/api/cau-hinh-pt/**"
+                        )
+                        .hasAuthority("NHAN_VIEN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/buoi-pt"
+                        )
+                        .hasAuthority("NHAN_VIEN")
+
+                        .requestMatchers(
+                          HttpMethod.PUT,
+                        "/api/buoi-pt/*/trang-thai")
+                        .hasAnyAuthority("NHAN_VIEN", "PT")
+
+                        
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/buoi-pt/pt-cua-toi"
+                        )
+                        .hasAuthority("PT")
+
+                        
+                        .requestMatchers(
+                                "/api/buoi-pt/cua-toi/**"
+                        )
+                        .hasAuthority("HOI_VIEN")
+
+                        .requestMatchers(
+                         "/api/check-in-out/cua-toi/**")
+                        .hasAuthority("HOI_VIEN")
+
+                        .requestMatchers(
+                          HttpMethod.GET,
+                         "/api/check-in-out")
+                        .hasAuthority("NHAN_VIEN")
+
+
+
+
+                        
+                        .requestMatchers(
+                          HttpMethod.POST,
+                        "/api/chi-so-co-the/hoi-vien/**"
+                        )
+                        .hasAuthority("NHAN_VIEN")
+
+                               
+                        .requestMatchers(
+                          "/api/chi-so-co-the/cua-toi/**"
+                        )
+                        .hasAuthority("HOI_VIEN")
+
+
+                        .requestMatchers("/api/thong-ke/tong-quan")
+                                .hasAuthority("NHAN_VIEN")
+
+                        .requestMatchers("/api/thong-ke/pt/cua-toi")
+                        .hasAuthority("PT")
+
+                        .requestMatchers("/api/thong-ke/hoi-vien/cua-toi")
+                        .hasAuthority("HOI_VIEN")
                         .anyRequest()
                         .authenticated()
                 )

@@ -51,6 +51,7 @@ export function Resource(){
 
 function PtResource(){
   const s=useLoad(()=>api('GET','/pt'))
+  const accounts=useLoad(()=>api('GET','/tai-khoan'))
   const now=new Date()
   const [thang,setThang]=useState(String(now.getMonth()+1).padStart(2,'0'))
   const [nam,setNam]=useState(String(now.getFullYear()))
@@ -58,6 +59,31 @@ function PtResource(){
   const [salary,setSalary]=useState(null)
   const [loadingSalary,setLoadingSalary]=useState(false)
   const [salaryError,setSalaryError]=useState(null)
+  const [editing,setEditing]=useState(null)
+
+  const ptAccounts=(Array.isArray(accounts.d)?accounts.d:[])
+    .filter(a=>a.vaiTro==='PT')
+    .map(a=>({value:a.maTk,label:`${a.tenDangNhap} · ${a.trangThai||'PT'}`}))
+
+  const ptFields=[
+    ['maTk','Tài khoản PT','text',ptAccounts],
+    ['cccd','CCCD'],
+    ['hoTen','Họ tên'],
+    ['ngaySinh','Ngày sinh','date'],
+    ['sdt','Số điện thoại'],
+    ['chuyenMon','Chuyên môn'],
+    ['soNamKinhNghiem','Số năm kinh nghiệm','number'],
+    ['luongCoBan','Lương cơ bản','number'],
+    ['trangThai','Trạng thái','text',['Đang làm việc','Nghỉ phép','Đã nghỉ việc']]
+  ]
+
+  const savePt=o=>act(
+    ()=>editing?.maPt!=null
+      ? api('PUT',`/pt/${editing.maPt}`,o)
+      : api('POST','/pt',o),
+    editing?.maPt!=null?'Đã cập nhật PT':'Đã thêm PT',
+    ()=>{setEditing(null);s.reload()}
+  )
 
   const xemLuong=async(pt)=>{
     setSelected(pt)
@@ -81,6 +107,22 @@ function PtResource(){
       t="Huấn luyện viên"
       s="Quản lý PT và xem tổng lương theo từng tháng"
     />
+
+    {!editing&&<div style={{display:'flex',justifyContent:'flex-end',marginBottom:14}}>
+      <button className="btn" onClick={()=>setEditing({})}>＋ Thêm PT</button>
+    </div>}
+
+    {editing&&<Form
+      fields={ptFields}
+      init={editing}
+      label={editing.maPt!=null?'Cập nhật PT':'Thêm PT'}
+      onSubmit={savePt}
+      onCancel={()=>setEditing(null)}
+    />}
+
+    {editing&&<p className="sub" style={{marginTop:-8,marginBottom:16}}>
+      Tài khoản phải có vai trò <b>PT</b>. Nếu chưa có tài khoản PT, hãy tạo trước tại mục “Tài khoản”.
+    </p>}
 
     {selected&&<div className="cd salary-panel">
       <div className="salary-panel-head">
@@ -116,7 +158,6 @@ function PtResource(){
       </div>
 
       {salaryError&&<div className="salary-error">{salaryError.message}</div>}
-
       {loadingSalary&&<div className="salary-loading">Đang tải dữ liệu lương…</div>}
 
       {salary&&!loadingSalary&&<div className="salary-grid">
@@ -161,7 +202,10 @@ function PtResource(){
                 <td>{money(pt.luongCoBan)}</td>
                 <td>{pt.trangThai}</td>
                 <td style={{whiteSpace:'nowrap'}}>
-                  <button className="btn s" onClick={()=>xemLuong(pt)}>
+                  <button className="btn g s" onClick={()=>{setEditing(pt);scrollTo(0,0)}}>
+                    Sửa
+                  </button>
+                  <button className="btn s" style={{marginLeft:6}} onClick={()=>xemLuong(pt)}>
                     Xem lương
                   </button>
                 </td>

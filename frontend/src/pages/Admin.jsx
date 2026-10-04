@@ -108,7 +108,7 @@ function PtResource(){
       s="Quản lý PT và xem tổng lương theo từng tháng"
     />
 
-    {!editing&&<div style={{display:'flex',justifyContent:'flex-end',marginBottom:14}}>
+    {!editing&&<div style={{display:'flex',justifyContent:'flex-start',marginBottom:14}}>
       <button className="btn" onClick={()=>setEditing({})}>＋ Thêm PT</button>
     </div>}
 

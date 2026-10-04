@@ -43,9 +43,21 @@ export function State({s,children,empty='Chưa có dữ liệu.'}){
   return children(s.d)
 }
 
+const FIELD_LABELS={
+  maTk:'Mã tài khoản',maHv:'Mã hội viên',maPt:'Mã PT',maPhong:'Mã phòng',maGoi:'Mã gói',maLop:'Mã lớp',maBuoi:'Mã buổi',maBuoiPt:'Mã buổi PT',
+  maDk:'Mã đăng ký',maDkGoi:'Mã đăng ký gói',maDkLop:'Mã đăng ký lớp',tenDangNhap:'Tên đăng nhập',vaiTro:'Vai trò',trangThai:'Trạng thái',
+  cccd:'CCCD',hoTen:'Họ tên',ngaySinh:'Ngày sinh',gioiTinh:'Giới tính',diaChi:'Địa chỉ',sdt:'Số điện thoại',
+  chuyenMon:'Chuyên môn',soNamKinhNghiem:'Số năm kinh nghiệm',luongCoBan:'Lương cơ bản',tenPhong:'Tên phòng',viTri:'Vị trí',sucChua:'Sức chứa',
+  tenGoi:'Tên gói',thoiHanThang:'Thời hạn (tháng)',giaTien:'Giá tiền',soBuoiPt:'Số buổi PT',soBuoiPtConLai:'Số buổi PT còn lại',
+  tenLop:'Tên lớp',donGiaPt:'Đơn giá PT',thuHoc:'Thứ học',gioBatDau:'Giờ bắt đầu',gioKetThuc:'Giờ kết thúc',ngayBatDau:'Ngày bắt đầu',ngayKetThuc:'Ngày kết thúc',
+  ngayDangKy:'Ngày đăng ký',thoiGianBatDau:'Thời gian bắt đầu',thoiLuong:'Thời lượng',ngayHoc:'Ngày học',
+  thoiGianCheckIn:'Thời gian check-in',thoiGianCheckout:'Thời gian check-out',canNang:'Cân nặng',chieuCao:'Chiều cao',phanTramMo:'Phần trăm mỡ',vongEo:'Vòng eo',
+  message:'Thông báo',createdAt:'Ngày tạo',updatedAt:'Cập nhật'
+}
+const fieldLabel=k=>FIELD_LABELS[k]||k.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/_/g,' ').replace(/^./,x=>x.toUpperCase())
 export function Table({rows,actions,hide=[]}){
   const cols=Object.keys(rows[0]||{}).filter(k=>!hide.includes(k)&&typeof rows[0][k]!=='object')
-  return <div className="cd tw"><table><thead><tr>{cols.map(c=><th key={c}>{c}</th>)}{actions&&<th/>}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{cols.map(c=><td key={c}>{fmt(c,r[c])}</td>)}{actions&&<td style={{whiteSpace:'nowrap'}}>{actions(r)}</td>}</tr>)}</tbody></table></div>
+  return <div className="cd tw"><table><thead><tr>{cols.map(c=><th key={c}>{fieldLabel(c)}</th>)}{actions&&<th>Thao tác</th>}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{cols.map(c=><td key={c}>{fmt(c,r[c])}</td>)}{actions&&<td style={{whiteSpace:'nowrap'}}>{actions(r)}</td>}</tr>)}</tbody></table></div>
 }
 
 function Num({v}){
@@ -74,10 +86,26 @@ const statLabel=k=>STAT_LABELS[k]||k.replace(/([a-z])([A-Z])/g,'$1 $2').replace(
 export const Stats=({d})=><div className="gr stats-grid">{Object.entries(d||{}).filter(([,v])=>v!=null).map(([k,v],i)=><div key={k} className="cd st"><span className="stat-index">{String(i+1).padStart(2,'0')}</span><small>{statLabel(k)}</small><b>{typeof v==='number'&&/gia|luong|tien|doanhThu/i.test(k)?money(v):<Num v={v}/>}</b><i>FITCORE · LIVE</i></div>)}</div>
 
 export function Form({fields,init={},onSubmit,label='Lưu',onCancel}){
-  const [v,set]=useState(init)
-  useEffect(()=>set(init),[JSON.stringify(init)])
+  const [v,set]=useState(init),[errors,setErrors]=useState({})
+  useEffect(()=>{set(init);setErrors({})},[JSON.stringify(init)])
+  const validate=(k,x,t)=>{
+    const s=String(x??'').trim()
+    if(!s)return ''
+    if(k==='tenDangNhap' && !/^[A-Za-z0-9_]+$/.test(s))return 'Tên đăng nhập chỉ được chứa chữ cái không dấu, số và dấu gạch dưới.'
+    if(k==='cccd' && !/^\d{12}$/.test(s))return 'CCCD phải gồm đúng 12 chữ số.'
+    if(k==='sdt' && !/^\d{10,11}$/.test(s))return 'Số điện thoại phải gồm 10–11 chữ số.'
+    if(k==='matKhau' && s.length<6)return 'Mật khẩu phải có ít nhất 6 ký tự.'
+    if(['soNamKinhNghiem','soBuoiPt','soBuoiPtConLai'].includes(k) && Number(x)<0)return 'Giá trị không được âm.'
+    if(['sucChua','thoiHanThang'].includes(k) && Number(x)<1)return 'Giá trị phải lớn hơn hoặc bằng 1.'
+    if(['giaTien','luongCoBan','donGiaPt'].includes(k) && Number(x)<=0)return 'Giá trị phải lớn hơn 0.'
+    return ''
+  }
   const sub=e=>{
     e.preventDefault()
+    const next={}
+    fields.forEach(([k,,t])=>{const msg=validate(k,v[k],t);if(msg)next[k]=msg})
+    setErrors(next)
+    if(Object.keys(next).length)return
     const o={}
     fields.forEach(([k,,t])=>{
       let x=v[k]
@@ -88,14 +116,15 @@ export function Form({fields,init={},onSubmit,label='Lưu',onCancel}){
     })
     onSubmit(o)
   }
-  return <form onSubmit={sub} className="cd">
+  return <form onSubmit={sub} className="cd" noValidate>
     <div className="row">
-      {fields.map(([k,l,t='text',opts])=><div key={k}>
+      {fields.map(([k,l,t='text',opts])=><div key={k} className={errors[k]?'field-invalid':''}>
         <label>{l}</label>
-        {opts?<select value={v[k]??''} onChange={e=>set({...v,[k]:e.target.value})}>
+        {opts?<select value={v[k]??''} onChange={e=>{set({...v,[k]:e.target.value});if(errors[k])setErrors(x=>({...x,[k]:''}))}}>
           <option value=""></option>
-           {opts.map(o=><option key={typeof o==='object'?o.value:o} value={typeof o==='object'?o.value:o}>{typeof o==='object'?o.label:o}</option>)}
-        </select>:<input type={t} step={t==='number'?'any':undefined} min={t==='datetime-local'?new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16):undefined} value={v[k]??''} onChange={e=>set({...v,[k]:e.target.value})}/>}
+          {opts.map(o=><option key={typeof o==='object'?o.value:o} value={typeof o==='object'?o.value:o}>{typeof o==='object'?o.label:o}</option>)}
+        </select>:<input type={t} step={t==='number'?'any':undefined} min={t==='datetime-local'?new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16):undefined} value={v[k]??''} onChange={e=>{set({...v,[k]:e.target.value});if(errors[k])setErrors(x=>({...x,[k]:''}))}}/>}
+        {errors[k]&&<small className="field-error">{errors[k]}</small>}
       </div>)}
     </div>
     <div style={{marginTop:16,display:'flex',gap:8}}>
@@ -104,7 +133,6 @@ export function Form({fields,init={},onSubmit,label='Lưu',onCancel}){
     </div>
   </form>
 }
-
 /*
  * Lịch tuần dùng trực tiếp dữ liệu LOP_HOC.
  * thuHoc có thể là chuỗi như "2,4,6"; mỗi lớp được đưa vào đúng các cột Thứ 2 -> Chủ nhật.

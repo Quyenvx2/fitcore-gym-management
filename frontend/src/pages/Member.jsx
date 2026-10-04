@@ -129,36 +129,58 @@ export function Goi(){
 }
 
 export function Lop(){
-  const s=useLoad(()=>api('GET','/lop-hoc'))
+  const s=useLoad(async()=>{
+    const [classes,regs]=await Promise.all([api('GET','/lop-hoc'),api('GET','/dang-ky-lop/cua-toi')])
+    return {classes:Array.isArray(classes)?classes:[],regs:Array.isArray(regs)?regs:[]}
+  })
   return <>
     <Head t="Lớp học" s="Đăng ký lớp cùng huấn luyện viên"/>
     <State s={s}>
-      {d=><div className="gr">
-        {d.map(l=>{
-          const open=l.trangThai==='Lớp đang mở'
-          return <div key={l.maLop} className="cd" style={{padding:0,overflow:'hidden'}}>
-            <div className="lh"><img src={classIcon(l.tenLop)} alt="" className="module-icon class-icon-img"/></div>
-            <div style={{padding:20}}>
-              <span className={'bd '+(open?'':'w')}>{l.trangThai}</span>
-              <h3 style={{margin:'8px 0 2px'}}>{l.tenLop}</h3>
-              <p className="sub" style={{margin:0}}>Thứ {l.thuHoc} · {l.gioBatDau?.slice(0,5)}–{l.gioKetThuc?.slice(0,5)}</p>
-              <p className="sub" style={{margin:'4px 0'}}>{fmt('d',l.ngayBatDau)} → {fmt('d',l.ngayKetThuc)} · {l.soNguoiDaDangKy??0} người</p>
-              <div style={{display:'flex',gap:8,marginTop:12}}>
-                <button className="btn" style={{flex:1}} disabled={!open} onClick={()=>act(
-                  ()=>api('POST','/dang-ky-lop/cua-toi',{maLop:l.maLop}),
-                  'Đăng ký lớp thành công',
-                  s.reload
-                )}>Đăng ký</button>
-                <button className="btn g" onClick={()=>act(
-                  ()=>api('DELETE','/dang-ky-lop/cua-toi?maLop='+l.maLop),
-                  'Đã hủy đăng ký',
-                  s.reload
-                )}>Hủy</button>
+      {d=>{
+        const active=new Set(d.regs.filter(r=>r.trangThai==='Đăng kí thành công').map(r=>r.maLop))
+        return <>
+          <div className="gr">
+            {d.classes.map(l=>{
+              const open=l.trangThai==='Lớp đang mở', registered=active.has(l.maLop)
+              return <div key={l.maLop} className="cd class-card" style={{padding:0,overflow:'hidden'}}>
+                <div className="lh"><img src={classIcon(l.tenLop)} alt="" className="module-icon class-icon-img"/></div>
+                <div style={{padding:20}}>
+                  <span className={'bd '+(registered?'b':open?'':'w')}>{registered?'Đã đăng ký':l.trangThai}</span>
+                  <h3 style={{margin:'8px 0 2px'}}>{l.tenLop}</h3>
+                  <p className="sub" style={{margin:0}}>Thứ {l.thuHoc} · {l.gioBatDau?.slice(0,5)}–{l.gioKetThuc?.slice(0,5)}</p>
+                  <p className="sub" style={{margin:'4px 0'}}>{fmt('d',l.ngayBatDau)} → {fmt('d',l.ngayKetThuc)} · {l.soNguoiDaDangKy??0} người</p>
+                  <div className="class-actions">
+                    <button className="btn" style={{flex:1}} disabled={!open||registered} onClick={()=>act(
+                      ()=>api('POST','/dang-ky-lop/cua-toi',{maLop:l.maLop}),
+                      'Đăng ký lớp thành công',
+                      s.reload
+                    )}>{registered?'Đã đăng ký':'Đăng ký'}</button>
+                    {registered&&<button className="btn g" onClick={()=>act(
+                      ()=>api('DELETE','/dang-ky-lop/cua-toi?maLop='+l.maLop),
+                      'Đã hủy đăng ký',
+                      s.reload
+                    )}>Hủy</button>}
+                  </div>
+                </div>
               </div>
-            </div>
+            })}
           </div>
-        })}
-      </div>}
+          <div className="member-registration-panel">
+            <div className="panel-head"><div><span className="page-eyebrow">LỚP CỦA TÔI</span><h3>Đã đăng ký</h3></div><span className="panel-chip">{d.regs.filter(r=>r.trangThai==='Đăng kí thành công').length} LỚP</span></div>
+            {d.regs.filter(r=>r.trangThai==='Đăng kí thành công').length?
+              <div className="registration-list">
+                {d.regs.filter(r=>r.trangThai==='Đăng kí thành công').map(r=>{
+                  const l=d.classes.find(x=>x.maLop===r.maLop)
+                  return <div className="registration-item" key={r.maDkLop??r.maLop}>
+                    <div><b>{l?.tenLop||`Lớp #${r.maLop}`}</b><small>{l?`Thứ ${l.thuHoc} · ${l.gioBatDau?.slice(0,5)}–${l.gioKetThuc?.slice(0,5)} · ${fmt('d',l.ngayBatDau)} → ${fmt('d',l.ngayKetThuc)}`:'Đã đăng ký'}</small></div>
+                    <button className="btn d s" onClick={()=>act(()=>api('DELETE','/dang-ky-lop/cua-toi?maLop='+r.maLop),'Đã hủy đăng ký',s.reload)}>Hủy</button>
+                  </div>
+                })}
+              </div>
+              :<p className="sub" style={{margin:0}}>Bạn chưa đăng ký lớp nào. Khi đăng ký thành công, lớp sẽ xuất hiện tại đây.</p>}
+          </div>
+        </>
+      }}
     </State>
   </>
 }

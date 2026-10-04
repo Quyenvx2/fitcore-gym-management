@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.List;
 @RestController
 @RequestMapping("/api/dang-ky-lop")
 public class DangKyLopHocController {
@@ -31,6 +31,14 @@ public class DangKyLopHocController {
         this.hoiVienRepository = hoiVienRepository;
     }
 
+    @GetMapping("/cua-toi")
+public List<DangKyLopHocResponseDTO> layDanhSachLopCuaToi(
+        Authentication authentication
+) {
+    Integer maHv = layMaHv(authentication);
+
+    return service.layDanhSachLopCuaToi(maHv);
+}
     @PostMapping("/cua-toi")
     public DangKyLopHocResponseDTO dangKyLopHoc(
             @Valid @RequestBody DangKyLopHocRequestDTO request,

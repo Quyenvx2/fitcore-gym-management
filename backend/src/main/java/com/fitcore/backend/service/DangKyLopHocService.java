@@ -268,4 +268,18 @@ public class DangKyLopHocService {
     );
 }
 
+public List<DangKyLopHocResponseDTO> layDanhSachLopCuaToi(
+        Integer maHv
+) {
+
+    return dangKyLopHocRepository
+            .findByHoiVien_MaHvAndTrangThai(
+                    maHv,
+                    "Đăng kí thành công"
+            )
+            .stream()
+            .map(this::chuyenSangResponseDTO)
+            .toList();
+}
+
 }

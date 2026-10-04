@@ -1,0 +1,23 @@
+# Frontend - React / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Backend - Maven / Java
+backend/target/
+
+# Java
+*.class
+*.log
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example

@@ -179,3 +179,18 @@ INSERT INTO `CAU_HINH_PT`
 VALUES
 (200000, 'Đang áp dụng');
 
+USE gym_management;
+
+INSERT INTO TAI_KHOAN (
+    ten_dang_nhap,
+    mat_khau,
+    vai_tro,
+    trang_thai
+)
+VALUES (
+    'nhanvien01',
+    '$2a$10$9ccbPdCfHyFzvqsuEVm.jOkaLkRvt8RXsSUNqFhp9CF1NYrHD7deS',
+    'NHAN_VIEN',
+    'Active'
+);
+

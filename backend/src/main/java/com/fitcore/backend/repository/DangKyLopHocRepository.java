@@ -23,4 +23,8 @@ public interface DangKyLopHocRepository
     List<DangKyLopHoc> findByLopHoc_MaLop(Integer maLop);
 
     List<DangKyLopHoc> findByHoiVien_MaHv(Integer maHv);
+    List<DangKyLopHoc> findByHoiVien_MaHvAndTrangThai(
+        Integer maHv,
+        String trangThai
+);
 }

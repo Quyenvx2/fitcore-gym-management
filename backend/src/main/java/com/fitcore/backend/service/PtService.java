@@ -1,5 +1,6 @@
 package com.fitcore.backend.service;
 
+import com.fitcore.backend.dto.PtDanhSachResponseDTO;
 import com.fitcore.backend.dto.PtRequestDTO;
 import com.fitcore.backend.dto.PtResponseDTO;
 import com.fitcore.backend.entity.Pt;
@@ -32,6 +33,19 @@ public class PtService {
                 .map(this::chuyenSangResponseDTO)
                 .toList();
     }
+
+public List<PtDanhSachResponseDTO> layDanhSachPtChoHoiVien() {
+
+    return ptRepository.findAll()
+            .stream()
+            .map(pt -> new PtDanhSachResponseDTO(
+                    pt.getMaPt(),
+                    pt.getHoTen(),
+                    pt.getChuyenMon(),
+                    pt.getSoNamKinhNghiem()
+            ))
+            .toList();
+}
 
     public PtResponseDTO layPtTheoId(Integer id) {
 

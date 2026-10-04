@@ -91,6 +91,11 @@ public class SecurityConfig {
                         )
                         .hasAuthority("PT")
                         .requestMatchers(
+                                 HttpMethod.GET,
+                          "/api/pt/danh-sach-cho-hoi-vien"
+                                )
+                        .hasAuthority("HOI_VIEN")            
+                        .requestMatchers(
                                 "/api/pt/**"
                         )
                         .hasAuthority("NHAN_VIEN")

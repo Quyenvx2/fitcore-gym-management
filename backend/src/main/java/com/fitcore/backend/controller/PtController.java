@@ -1,6 +1,8 @@
 package com.fitcore.backend.controller;
 
+
 import com.fitcore.backend.dto.CapNhatHoSoPtRequestDTO;
+import com.fitcore.backend.dto.PtDanhSachResponseDTO;
 import com.fitcore.backend.dto.PtRequestDTO;
 import com.fitcore.backend.dto.PtResponseDTO;
 import com.fitcore.backend.service.PtService;
@@ -41,7 +43,12 @@ public class PtController {
                 request
         );
     }
+    // api cho hoi vien
 
+    @GetMapping("/danh-sach-cho-hoi-vien")
+    public List<PtDanhSachResponseDTO> layDanhSachPtChoHoiVien() {
+    return service.layDanhSachPtChoHoiVien();
+    }
     //api cho nhan vien
 
     @GetMapping

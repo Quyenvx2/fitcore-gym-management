@@ -13,19 +13,31 @@ import org.springframework.stereotype.Service;
 import com.fitcore.backend.dto.CapNhatHoSoPtRequestDTO;
 import java.util.List;
 
+import com.fitcore.backend.repository.BuoiPtRepository;
+import com.fitcore.backend.repository.LopHocRepository;
+import com.fitcore.backend.dto.LuongPtResponseDTO;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Service
 public class PtService {
 
     private final PtRepository ptRepository;
-    private final TaiKhoanRepository taiKhoanRepository;
-
+private final TaiKhoanRepository taiKhoanRepository;
+private final BuoiPtRepository buoiPtRepository;
+private final LopHocRepository lopHocRepository;
     public PtService(
-            PtRepository ptRepository,
-            TaiKhoanRepository taiKhoanRepository) {
+        PtRepository ptRepository,
+        TaiKhoanRepository taiKhoanRepository,
+        BuoiPtRepository buoiPtRepository,
+        LopHocRepository lopHocRepository) {
 
-        this.ptRepository = ptRepository;
-        this.taiKhoanRepository = taiKhoanRepository;
-    }
+    this.ptRepository = ptRepository;
+    this.taiKhoanRepository = taiKhoanRepository;
+    this.buoiPtRepository = buoiPtRepository;
+    this.lopHocRepository = lopHocRepository;
+}
 
     public List<PtResponseDTO> layDanhSachPt() {
         return ptRepository.findAll()
@@ -34,7 +46,7 @@ public class PtService {
                 .toList();
     }
 
-public List<PtDanhSachResponseDTO> layDanhSachPtChoHoiVien() {
+    public List<PtDanhSachResponseDTO> layDanhSachPtChoHoiVien() {
 
     return ptRepository.findAll()
             .stream()
@@ -280,6 +292,49 @@ public List<PtDanhSachResponseDTO> layDanhSachPtChoHoiVien() {
     Pt updated = ptRepository.save(pt);
 
     return chuyenSangResponseDTO(updated);
+}
+
+       public LuongPtResponseDTO tinhLuongTheoThang(
+        Integer maPt,
+        int thang,
+        int nam) {
+
+    Pt pt = ptRepository.findById(maPt)
+            .orElseThrow(() -> new BusinessException(
+                    "PT_NOT_FOUND",
+                    "Không tìm thấy PT",
+                    HttpStatus.NOT_FOUND
+            ));
+
+    LocalDate ngayDauThang = LocalDate.of(nam, thang, 1);
+    LocalDate ngayDauThangSau = ngayDauThang.plusMonths(1);
+
+    LocalDateTime tuThoiGian = ngayDauThang.atStartOfDay();
+    LocalDateTime denThoiGian = ngayDauThangSau.atStartOfDay();
+
+    BigDecimal luongCoBan = pt.getLuongCoBan();
+
+    BigDecimal luongBuoiPt =
+            buoiPtRepository.tinhLuongBuoiPtTheoThang(
+                    maPt,
+                    tuThoiGian,
+                    denThoiGian
+            );
+
+    BigDecimal luongLopHoc =
+            lopHocRepository.tinhLuongLopHocTheoThang(
+                    maPt,
+                    ngayDauThang,
+                    ngayDauThangSau.minusDays(1)
+            );
+
+    return new LuongPtResponseDTO(
+            pt.getMaPt(),
+            pt.getHoTen(),
+            luongCoBan,
+            luongBuoiPt,
+            luongLopHoc
+    );
 }
 
     public void xoaPt(Integer id) {

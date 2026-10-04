@@ -2,6 +2,7 @@ package com.fitcore.backend.controller;
 
 
 import com.fitcore.backend.dto.CapNhatHoSoPtRequestDTO;
+import com.fitcore.backend.dto.LuongPtResponseDTO;
 import com.fitcore.backend.dto.PtDanhSachResponseDTO;
 import com.fitcore.backend.dto.PtRequestDTO;
 import com.fitcore.backend.dto.PtResponseDTO;
@@ -77,7 +78,14 @@ public class PtController {
 
         return service.capNhatPt(id, request);
     }
+ @GetMapping("/{id}/luong")
+public LuongPtResponseDTO tinhLuongTheoThang(
+        @PathVariable Integer id,
+        @RequestParam int thang,
+        @RequestParam int nam) {
 
+    return service.tinhLuongTheoThang(id, thang, nam);
+}
     @DeleteMapping("/{id}")
     public void xoaPt(
             @PathVariable Integer id) {

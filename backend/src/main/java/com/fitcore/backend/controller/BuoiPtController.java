@@ -84,7 +84,7 @@ public class BuoiPtController {
 }
     
     @PutMapping("/{maBuoiPt}/trang-thai")
-public BuoiPtResponseDTO capNhatTrangThai(
+    public BuoiPtResponseDTO capNhatTrangThai(
         @PathVariable Integer maBuoiPt,
         @Valid @RequestBody BuoiPtTrangThaiRequestDTO request,
         Authentication authentication

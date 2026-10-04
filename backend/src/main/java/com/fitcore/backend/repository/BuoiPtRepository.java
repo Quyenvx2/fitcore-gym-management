@@ -10,12 +10,10 @@ import java.util.List;
 
 public interface BuoiPtRepository extends JpaRepository<BuoiPt, Integer> {
 
-  
     List<BuoiPt> findByHoiVien_MaHv(Integer maHv);
 
     List<BuoiPt> findByPt_MaPt(Integer maPt);
 
-   
     List<BuoiPt> findByPt_MaPtAndThoiGianBatDauBetween(
             Integer maPt,
             LocalDateTime tuThoiGian,
@@ -25,6 +23,20 @@ public interface BuoiPtRepository extends JpaRepository<BuoiPt, Integer> {
     // Lấy các buổi theo trạng thái
     List<BuoiPt> findByTrangThai(String trangThai);
 
+    // Tính tiền các buổi PT đã hoàn thành trong tháng
+    @Query(value = """
+            SELECT COALESCE(SUM(don_gia_pt), 0)
+            FROM BUOI_PT
+            WHERE ma_pt = :maPt
+              AND thoi_gian_bat_dau >= :tuThoiGian
+              AND thoi_gian_bat_dau < :denThoiGian
+              AND trang_thai = 'Đã hoàn thành'
+            """, nativeQuery = true)
+    java.math.BigDecimal tinhLuongBuoiPtTheoThang(
+            @Param("maPt") Integer maPt,
+            @Param("tuThoiGian") LocalDateTime tuThoiGian,
+            @Param("denThoiGian") LocalDateTime denThoiGian
+    );
 
     @Query(value = """
             SELECT COUNT(*)

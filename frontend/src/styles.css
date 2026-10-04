@@ -1138,3 +1138,18 @@ aside .brand-logo img{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* ===== Bảng lương PT ===== */
+.salary-panel{margin-top:6px;padding:22px}
+.salary-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.salary-filter{margin-top:8px;align-items:end}
+.salary-filter>div{min-width:130px}
+.salary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.salary-item{padding:18px;background:var(--panel2);border:1px solid var(--line)}
+.salary-item span{display:block;color:var(--mu);font-size:12px;margin-bottom:6px}
+.salary-item b{display:block;font-size:20px}
+.salary-item.total{border-color:var(--ac);background:linear-gradient(135deg,#c6ff3d16,var(--panel2))}
+.salary-item.total b{color:var(--ac);font-size:24px}
+.salary-loading,.salary-error{margin-top:16px;padding:12px 14px;border:1px solid var(--line);background:var(--panel2)}
+.salary-error{border-color:var(--co);color:var(--co)}
+@media(max-width:820px){.salary-grid{grid-template-columns:1fr 1fr}.salary-panel-head{flex-direction:column}}

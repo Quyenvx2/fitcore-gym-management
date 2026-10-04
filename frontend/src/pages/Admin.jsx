@@ -42,9 +42,136 @@ export const Home=()=>{const s=useLoad(()=>api('GET','/thong-ke/tong-quan'));con
         </div>
       </div></>}</State></>}
 export function Resource(){
-  const {res}=useParams(),c=RES[res]
+  const {res}=useParams()
+  if(res==='pt')return <PtResource/>
+  const c=RES[res]
   if(!c)return <Head t="Không tìm thấy trang" s=""/>
   return <Inner key={res} c={c}/>
+}
+
+function PtResource(){
+  const s=useLoad(()=>api('GET','/pt'))
+  const now=new Date()
+  const [thang,setThang]=useState(String(now.getMonth()+1).padStart(2,'0'))
+  const [nam,setNam]=useState(String(now.getFullYear()))
+  const [selected,setSelected]=useState(null)
+  const [salary,setSalary]=useState(null)
+  const [loadingSalary,setLoadingSalary]=useState(false)
+  const [salaryError,setSalaryError]=useState(null)
+
+  const xemLuong=async(pt)=>{
+    setSelected(pt)
+    setSalary(null)
+    setSalaryError(null)
+    setLoadingSalary(true)
+    try{
+      const d=await api('GET',`/pt/${pt.maPt}/luong?thang=${Number(thang)}&nam=${Number(nam)}`)
+      setSalary(d)
+    }catch(e){
+      setSalaryError(e)
+    }finally{
+      setLoadingSalary(false)
+    }
+  }
+
+  const tinhLai=()=>selected&&xemLuong(selected)
+
+  return <div>
+    <Head
+      t="Huấn luyện viên"
+      s="Quản lý PT và xem tổng lương theo từng tháng"
+    />
+
+    {selected&&<div className="cd salary-panel">
+      <div className="salary-panel-head">
+        <div>
+          <span className="page-eyebrow">BẢNG LƯƠNG PT</span>
+          <h3 style={{margin:'6px 0 4px'}}>Lương của {selected.hoTen}</h3>
+          <p className="sub" style={{margin:0}}>
+            Tháng {Number(thang)}/{nam}
+          </p>
+        </div>
+        <button className="btn g s" onClick={()=>{setSelected(null);setSalary(null);setSalaryError(null)}}>Đóng</button>
+      </div>
+
+      <div className="row salary-filter">
+        <div>
+          <label>Tháng</label>
+          <select value={thang} onChange={e=>setThang(e.target.value)}>
+            {Array.from({length:12},(_,i)=>{
+              const m=String(i+1).padStart(2,'0')
+              return <option key={m} value={m}>{i+1}</option>
+            })}
+          </select>
+        </div>
+        <div>
+          <label>Năm</label>
+          <input type="number" min="2000" max="2100" value={nam} onChange={e=>setNam(e.target.value)}/>
+        </div>
+        <div style={{flex:'0 0 auto',minWidth:0}}>
+          <button className="btn" onClick={tinhLai} disabled={loadingSalary}>
+            {loadingSalary?'Đang tính…':'Xem lương'}
+          </button>
+        </div>
+      </div>
+
+      {salaryError&&<div className="salary-error">{salaryError.message}</div>}
+
+      {loadingSalary&&<div className="salary-loading">Đang tải dữ liệu lương…</div>}
+
+      {salary&&!loadingSalary&&<div className="salary-grid">
+        <div className="salary-item">
+          <span>Lương cơ bản</span>
+          <b>{money(salary.luongCoBan)}</b>
+        </div>
+        <div className="salary-item">
+          <span>Dạy buổi PT hoàn thành</span>
+          <b>{money(salary.luongBuoiPt)}</b>
+        </div>
+        <div className="salary-item">
+          <span>Dạy lớp học</span>
+          <b>{money(salary.luongLopHoc)}</b>
+        </div>
+        <div className="salary-item total">
+          <span>Tổng lương</span>
+          <b>{money(salary.tongLuong)}</b>
+        </div>
+      </div>}
+    </div>}
+
+    <div className="mt">
+      <State s={s}>
+        {rows=><div className="cd tw">
+          <table>
+            <thead><tr>
+              <th>Mã PT</th>
+              <th>Họ tên</th>
+              <th>Chuyên môn</th>
+              <th>Số năm KN</th>
+              <th>Lương cơ bản</th>
+              <th>Trạng thái</th>
+              <th/>
+            </tr></thead>
+            <tbody>
+              {rows.map(pt=><tr key={pt.maPt}>
+                <td>{pt.maPt}</td>
+                <td>{pt.hoTen}</td>
+                <td>{pt.chuyenMon}</td>
+                <td>{pt.soNamKinhNghiem}</td>
+                <td>{money(pt.luongCoBan)}</td>
+                <td>{pt.trangThai}</td>
+                <td style={{whiteSpace:'nowrap'}}>
+                  <button className="btn s" onClick={()=>xemLuong(pt)}>
+                    Xem lương
+                  </button>
+                </td>
+              </tr>)}
+            </tbody>
+          </table>
+        </div>}
+      </State>
+    </div>
+  </div>
 }
 function Inner({c}){
   const s=useLoad(()=>api('GET',c.url)),[edit,setEdit]=useState(null)

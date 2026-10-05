@@ -55,9 +55,26 @@ const FIELD_LABELS={
   message:'Thông báo',createdAt:'Ngày tạo',updatedAt:'Cập nhật'
 }
 const fieldLabel=k=>FIELD_LABELS[k]||k.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/_/g,' ').replace(/^./,x=>x.toUpperCase())
+const NEWEST_KEYS=['ngayDangKy','createdAt','updatedAt','thoiGianBatDau','thoiGianCheckIn','ngayDo','ngayHoc','ngayHuy','ngayBatDau','ngayKetThuc']
+const newestValue=r=>{
+  for(const k of NEWEST_KEYS){
+    const v=r?.[k]
+    if(v!=null&&v!==''){
+      const t=new Date(String(v).length===10?`${v}T00:00:00`:v).getTime()
+      if(Number.isFinite(t))return t
+    }
+  }
+  for(const k of ['maDk','maDkGoi','maDkLop','maBuoiPt','maBuoi','maLanDo','maLop','maPt','maHv','maTk','id']){
+    const n=Number(r?.[k])
+    if(Number.isFinite(n))return n
+  }
+  return 0
+}
+const newestFirst=rows=>[...(Array.isArray(rows)?rows:[])].sort((a,b)=>newestValue(b)-newestValue(a))
 export function Table({rows,actions,hide=[]}){
-  const cols=Object.keys(rows[0]||{}).filter(k=>!hide.includes(k)&&typeof rows[0][k]!=='object')
-  return <div className="cd tw"><table><thead><tr>{cols.map(c=><th key={c}>{fieldLabel(c)}</th>)}{actions&&<th>Thao tác</th>}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{cols.map(c=><td key={c}>{fmt(c,r[c])}</td>)}{actions&&<td style={{whiteSpace:'nowrap'}}>{actions(r)}</td>}</tr>)}</tbody></table></div>
+  const sorted=newestFirst(rows)
+  const cols=Object.keys(sorted[0]||{}).filter(k=>!hide.includes(k)&&typeof sorted[0][k]!=='object')
+  return <div className="cd tw"><table><thead><tr>{cols.map(c=><th key={c}>{fieldLabel(c)}</th>)}{actions&&<th>Thao tác</th>}</tr></thead><tbody>{sorted.map((r,i)=><tr key={i}>{cols.map(c=><td key={c}>{fmt(c,r[c])}</td>)}{actions&&<td style={{whiteSpace:'nowrap'}}>{actions(r)}</td>}</tr>)}</tbody></table></div>
 }
 
 function Num({v}){
@@ -204,7 +221,7 @@ export function Schedule({items=[],role,ptSessions=[],initialMonth}){
   events.forEach(e=>{const k=isoDate(e.date);(byDate[k]??=[]).push(e)})
   const todayKey=isoDate(now)
   const selectedEvents=selected?byDate[selected]||[]:[]
-  return <div className="calendar-shell">
+  return <div className="calendar-shell"><div className="calendar-scroll-area">
     <div className="calendar-toolbar">
       <div>
         <span className="calendar-kicker">LỊCH TRÌNH</span>
@@ -239,5 +256,5 @@ export function Schedule({items=[],role,ptSessions=[],initialMonth}){
       <div><span className="calendar-kicker">NGÀY ĐÃ CHỌN</span><h3>{new Date(selected+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h3></div>
       {!selectedEvents.length?<p className="sub">Không có lịch trong ngày này.</p>:<div className="detail-list">{selectedEvents.map((e,i)=>{const x=e.source;return <div className={'detail-item '+e.type} key={i}><div><b>{e.type==='class'?(x.tenLop||`Lớp #${x.maLop}`):'Buổi PT'}</b><small>{e.type==='class'?`Thứ ${x.thuHoc} · ${displayTime(x.gioBatDau)}–${displayTime(x.gioKetThuc)}`:`${displayTime(x.thoiGianBatDau?.slice(11)||x.thoiGianBatDau)} · ${x.thoiLuong?x.thoiLuong+' phút':''}`}</small></div><span>{e.type==='class'?'LỚP HỌC':'PT 1-1'}</span></div>})}</div>}
     </div>}
-  </div>
+  </div></div>
 }

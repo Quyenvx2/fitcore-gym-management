@@ -54,6 +54,9 @@ function Layout({role}){
           {label}
         </NavLink>
       )}
+      <button className="nv nv-logout" onClick={logout}>
+        Đăng xuất
+      </button>
       <div className="me">
         <b>{user.name}</b>
         <small>{role}</small>

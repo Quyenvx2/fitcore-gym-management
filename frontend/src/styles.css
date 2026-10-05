@@ -1236,3 +1236,424 @@ html,body,#root{max-width:100%;min-width:0;}
   .calendar-toolbar,.calendar-weekdays,.calendar-grid,.calendar-detail{min-width:760px!important;}
   .calendar-cell{min-height:118px;}
 }
+
+/* =========================================================
+   FITCORE RESPONSIVE SYSTEM — final cross-device pass
+   Goal: fluid containers, independent scroll regions, and a
+   sidebar that never hides the account/logout controls.
+   ========================================================= */
+
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.sh {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(220px, 240px) minmax(0, 1fr) !important;
+}
+
+/* Main content uses the whole available column instead of leaving a
+   large unused black strip on wide displays. */
+main {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding-inline: clamp(16px, 2.8vw, 42px) !important;
+  padding-block: clamp(20px, 3vw, 36px) !important;
+}
+
+.v {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin-inline: auto;
+}
+
+/* Every grid child is allowed to shrink. This prevents one long label,
+   button group, or card from widening the entire layout. */
+.dashboard-grid,
+.gr,
+.row,
+.salary-grid,
+.booking-panel,
+.page-head,
+.page-title-row,
+.panel-head,
+.salary-panel-head,
+.registration-item,
+.quick-actions {
+  min-width: 0 !important;
+}
+
+.dashboard-grid > *,
+.gr > *,
+.row > *,
+.salary-grid > *,
+.booking-panel > *,
+.quick-actions > * {
+  min-width: 0 !important;
+  max-width: 100%;
+}
+
+.gr {
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)) !important;
+  gap: clamp(10px, 1.2vw, 16px) !important;
+}
+
+.cd,
+.dashboard-panel,
+.booking-panel,
+.salary-panel,
+.tw,
+.calendar-shell {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100%;
+}
+
+.cd > *,
+.dashboard-panel > *,
+.booking-panel > *,
+.salary-panel > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Tables: use the available width first. Only create horizontal overflow
+   when the number of columns genuinely cannot fit. */
+.tw {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  max-width: 100% !important;
+  scrollbar-gutter: stable;
+}
+.tw table {
+  width: 100%;
+  min-width: 0;
+  table-layout: auto;
+}
+.tw th,
+.tw td {
+  max-width: 360px;
+  overflow-wrap: anywhere;
+}
+
+/* A table that really needs more room may scroll, but its wrapper remains
+   inside the page instead of becoming the page's vertical scroll owner. */
+.tw:focus-within {
+  outline: 1px solid rgba(175,250,1,.18);
+  outline-offset: -1px;
+}
+
+/* Calendar has seven meaningful columns, so horizontal scrolling is kept
+   local to the calendar on compact screens. */
+.calendar-shell {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  scrollbar-gutter: stable;
+}
+
+.calendar-toolbar,
+.calendar-weekdays,
+.calendar-grid,
+.calendar-detail {
+  min-width: 0;
+}
+.calendar-grid {
+  grid-template-columns: repeat(7, minmax(120px, 1fr)) !important;
+}
+
+/* Desktop sidebar: its own vertical scroll is intentional. The account
+   block sticks to the bottom, so logout can never disappear behind a long menu. */
+aside {
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #666c57 #0b0b0b;
+  padding-bottom: 12px !important;
+}
+
+aside .nv {
+  flex: 0 0 auto !important;
+}
+
+.me {
+  flex: 0 0 auto !important;
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: #0b0b0b;
+  padding-bottom: 12px !important;
+}
+
+.nv-logout {
+  display: none;
+  border: 0;
+  font: inherit;
+  width: 100%;
+  text-align: left;
+}
+
+aside::-webkit-scrollbar {
+  width: 8px;
+}
+aside::-webkit-scrollbar-track {
+  background: #0b0b0b;
+}
+aside::-webkit-scrollbar-thumb {
+  background: #555a4b;
+  border-radius: 8px;
+}
+aside::-webkit-scrollbar-thumb:hover {
+  background: var(--ac);
+}
+
+/* Forms and action rows scale instead of forcing horizontal overflow. */
+.row {
+  width: 100%;
+}
+.row > * {
+  min-width: min(150px, 100%);
+}
+.salary-filter > div:last-child {
+  flex: 0 1 auto !important;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .sh {
+    grid-template-columns: minmax(205px, 220px) minmax(0, 1fr) !important;
+  }
+  main {
+    padding-inline: 22px !important;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .sh {
+    display: block !important;
+    min-height: 100vh;
+  }
+
+  main {
+    width: 100% !important;
+    padding: 18px 14px 112px !important;
+  }
+
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    min-height: 52px;
+    padding: 8px 0;
+    background: linear-gradient(#050505 72%, transparent);
+  }
+
+  aside {
+    position: fixed !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 82px;
+    min-height: 68px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 2px;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 20;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  aside .logo,
+  aside .me {
+    display: none !important;
+  }
+
+  aside .nv {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 82px;
+    min-height: 54px;
+    padding: 7px 12px !important;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+    touch-action: manipulation;
+  }
+
+  aside .nv-logout {
+    display: flex !important;
+    background: #171717 !important;
+    color: #fef9f5 !important;
+    border-left: 1px solid #333 !important;
+  }
+
+  aside::-webkit-scrollbar {
+    height: 9px;
+    width: 0;
+  }
+  aside::-webkit-scrollbar-track {
+    background: #111;
+  }
+  aside::-webkit-scrollbar-thumb {
+    background: #666c57;
+    border: 2px solid #111;
+    border-radius: 8px;
+  }
+
+  .gr {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .dashboard-grid,
+  .booking-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .salary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .tw table {
+    width: max-content;
+    min-width: 760px;
+  }
+
+  .calendar-shell {
+    overflow-x: auto !important;
+  }
+  .calendar-toolbar,
+  .calendar-weekdays,
+  .calendar-grid,
+  .calendar-detail {
+    min-width: 860px;
+  }
+}
+
+@media (max-width: 560px) {
+  main {
+    padding: 14px 10px 112px !important;
+  }
+
+  .gr,
+  .stats-grid,
+  .salary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cd,
+  .dashboard-panel,
+  .salary-panel,
+  .booking-panel {
+    padding: 14px !important;
+  }
+
+  .page-title-row h2 {
+    font-size: clamp(25px, 8vw, 32px) !important;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .row > *,
+  .salary-filter > div:last-child {
+    width: 100%;
+    flex: 1 1 100% !important;
+  }
+  .row .btn {
+    width: 100%;
+  }
+
+  .tw {
+    padding: 0 !important;
+  }
+  .tw table {
+    min-width: 720px;
+  }
+
+  .calendar-toolbar,
+  .calendar-weekdays,
+  .calendar-grid,
+  .calendar-detail {
+    min-width: 840px;
+  }
+
+  .calendar-cell {
+    min-height: 112px;
+  }
+}
+
+
+/* =========================================================
+   TKB MOBILE UX + NEWEST-FIRST LISTS
+   The page owns vertical scrolling; the calendar owns horizontal
+   scrolling only when its 7-day grid is wider than the viewport.
+   ========================================================= */
+.calendar-shell{
+  overflow:visible!important;
+  touch-action:auto!important;
+  overscroll-behavior:initial!important;
+}
+.calendar-shell > .calendar-scroll-area{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:visible;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  scrollbar-width:auto;
+  scrollbar-color:#737965 #171717;
+}
+.calendar-shell > .calendar-scroll-area::-webkit-scrollbar{height:10px}
+.calendar-shell > .calendar-scroll-area::-webkit-scrollbar-track{background:#171717;border-radius:8px}
+.calendar-shell > .calendar-scroll-area::-webkit-scrollbar-thumb{background:#737965;border:2px solid #171717;border-radius:8px}
+.calendar-shell > .calendar-scroll-area::-webkit-scrollbar-thumb:hover{background:var(--ac)}
+.calendar-toolbar,.calendar-weekdays,.calendar-grid,.calendar-detail{min-width:900px;box-sizing:border-box}
+
+@media(max-width:820px){
+  .calendar-shell > .calendar-scroll-area{overflow-x:auto;overflow-y:visible}
+  .calendar-toolbar,.calendar-weekdays,.calendar-grid,.calendar-detail{min-width:640px}
+  .calendar-grid{grid-template-columns:repeat(7,minmax(82px,1fr))}
+  .calendar-cell{min-height:104px}
+}
+
+@media(max-width:560px){
+  .calendar-shell > .calendar-scroll-area{overflow-x:auto;overflow-y:visible}
+  .calendar-toolbar,.calendar-weekdays,.calendar-grid,.calendar-detail{min-width:560px}
+  .calendar-grid{grid-template-columns:repeat(7,minmax(72px,1fr))}
+  .calendar-cell{min-height:92px;padding:7px}
+  .calendar-date{font-size:11px}
+  .calendar-event{padding:5px 6px;font-size:10px}
+  .calendar-event small{font-size:9px}
+  .calendar-detail{padding:14px}
+}

@@ -169,7 +169,7 @@ export function Lop(){
             <div className="panel-head"><div><span className="page-eyebrow">LỚP CỦA TÔI</span><h3>Đã đăng ký</h3></div><span className="panel-chip">{d.regs.filter(r=>r.trangThai==='Đăng kí thành công').length} LỚP</span></div>
             {d.regs.filter(r=>r.trangThai==='Đăng kí thành công').length?
               <div className="registration-list">
-                {d.regs.filter(r=>r.trangThai==='Đăng kí thành công').map(r=>{
+                {[...d.regs].filter(r=>r.trangThai==='Đăng kí thành công').sort((a,b)=>new Date(b.ngayDangKy||b.createdAt||b.ngayBatDau||0)-new Date(a.ngayDangKy||a.createdAt||a.ngayBatDau||0)).map(r=>{
                   const l=d.classes.find(x=>x.maLop===r.maLop)
                   return <div className="registration-item" key={r.maDkLop??r.maLop}>
                     <div><b>{l?.tenLop||`Lớp #${r.maLop}`}</b><small>{l?`Thứ ${l.thuHoc} · ${l.gioBatDau?.slice(0,5)}–${l.gioKetThuc?.slice(0,5)} · ${fmt('d',l.ngayBatDau)} → ${fmt('d',l.ngayKetThuc)}`:'Đã đăng ký'}</small></div>

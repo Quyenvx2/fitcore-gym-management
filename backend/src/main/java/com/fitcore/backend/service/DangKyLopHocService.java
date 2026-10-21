@@ -109,7 +109,7 @@ public class DangKyLopHocService {
             );
         }
 
-        
+
 
         LocalDate homNay = LocalDate.now();
 
@@ -147,7 +147,11 @@ public class DangKyLopHocService {
             ngayHetHanDangKyLop = ngayKetThucLop;
         }
 
-
+        kiemTraTrungLichLop(
+        maHv,
+        lopHoc,
+        ngayHetHanDangKyLop
+        );
         DangKyLopHoc dangKy = new DangKyLopHoc();
 
         dangKy.setHoiVien(hoiVien);
@@ -173,8 +177,147 @@ public class DangKyLopHocService {
         return  chuyenSangResponseDTO(dangKyDaLuu);
     }
 
-    
-    @Transactional
+    // Kiểm tra các lớp hội viên đã đăng ký thành công
+private void kiemTraTrungLichLop(
+        Integer maHv,
+        LopHoc lopMoi,
+        LocalDate ngayHetHanLopMoi
+) {
+    List<DangKyLopHoc> danhSachDangKy =
+            dangKyLopHocRepository.findByHoiVien_MaHvAndTrangThai(
+                    maHv,
+                    "Đăng kí thành công"
+            );
+
+    for (DangKyLopHoc dangKyCu : danhSachDangKy) {
+        LopHoc lopCu = dangKyCu.getLopHoc();
+
+        // Bỏ qua nếu cùng mã lớp
+        if (lopCu.getMaLop().equals(lopMoi.getMaLop())) {
+            continue;
+        }
+
+        LocalDate ngayHetHanLopCu = dangKyCu.getNgayHetHan();
+
+        // Dự phòng trường hợp đăng ký cũ chưa có ngày hết hạn
+        if (ngayHetHanLopCu == null) {
+            ngayHetHanLopCu = lopCu.getNgayKetThuc();
+        }
+
+        if (coTrungLich(
+                lopMoi,
+                lopCu,
+                ngayHetHanLopMoi,
+                ngayHetHanLopCu
+        )) {
+            throw new BusinessException(
+                    "SCHEDULE_CONFLICT",
+                    "Lịch lớp học bị trùng với lớp '"
+                            + lopCu.getTenLop()
+                            + "'. Vui lòng chọn lớp có khung giờ khác.",
+                    HttpStatus.CONFLICT
+            );
+        }
+    }
+}
+
+
+// Kiểm tra hai lớp có trùng ngày học và giờ học không
+private boolean coTrungLich(
+        LopHoc lopA,
+        LopHoc lopB,
+        LocalDate ngayHetHanA,
+        LocalDate ngayHetHanB
+) {
+    // Hai khoảng giờ giao nhau khi điều kiện này đúng
+    boolean trungGio =
+            lopA.getGioBatDau().isBefore(lopB.getGioKetThuc())
+            && lopB.getGioBatDau().isBefore(lopA.getGioKetThuc());
+
+    if (!trungGio) {
+        return false;
+    }
+
+    // Ngày bắt đầu chung: lấy ngày muộn hơn
+    LocalDate ngayDau =
+            lopA.getNgayBatDau().isAfter(lopB.getNgayBatDau())
+                    ? lopA.getNgayBatDau()
+                    : lopB.getNgayBatDau();
+
+    // Không xét những buổi đã qua
+    LocalDate homNay = LocalDate.now();
+
+    if (homNay.isAfter(ngayDau)) {
+        ngayDau = homNay;
+    }
+
+    // Ngày kết thúc chung: lấy ngày sớm nhất
+    LocalDate ngayCuoi =
+            lopA.getNgayKetThuc().isBefore(lopB.getNgayKetThuc())
+                    ? lopA.getNgayKetThuc()
+                    : lopB.getNgayKetThuc();
+
+    if (ngayHetHanA.isBefore(ngayCuoi)) {
+        ngayCuoi = ngayHetHanA;
+    }
+
+    if (ngayHetHanB.isBefore(ngayCuoi)) {
+        ngayCuoi = ngayHetHanB;
+    }
+
+    // Không có khoảng ngày giao nhau
+    if (ngayDau.isAfter(ngayCuoi)) {
+        return false;
+    }
+
+    // Duyệt các ngày trong khoảng giao nhau
+    for (LocalDate ngay = ngayDau;
+         !ngay.isAfter(ngayCuoi);
+         ngay = ngay.plusDays(1)) {
+
+        String thu = chuyenNgaySangThu(ngay);
+
+        if (coHocVaoThu(lopA, thu)
+                && coHocVaoThu(lopB, thu)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// Kiểm tra một lớp có học vào thứ được xét không
+private boolean coHocVaoThu(LopHoc lopHoc, String thu) {
+    if (lopHoc.getThuHoc() == null
+            || lopHoc.getThuHoc().isBlank()) {
+        return false;
+    }
+
+    for (String thuDaCauHinh : lopHoc.getThuHoc().split(",")) {
+        if (thuDaCauHinh.trim().equals(thu)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// Chuyển ngày trong tuần sang đúng định dạng thu_hoc của database
+private String chuyenNgaySangThu(LocalDate ngay) {
+    return switch (ngay.getDayOfWeek()) {
+        case MONDAY -> "2";
+        case TUESDAY -> "3";
+        case WEDNESDAY -> "4";
+        case THURSDAY -> "5";
+        case FRIDAY -> "6";
+        case SATURDAY -> "7";
+        case SUNDAY -> "CN";
+    };
+}
+
+@Transactional
     public DangKyLopHocResponseDTO huyDangKyLopHoc(
         Integer maHv,
         Integer maLop

@@ -35,7 +35,7 @@ public class BuoiPtService {
     private final DangKyGoiRepository dangKyGoiRepository;
     private final CauHinhPtRepository cauHinhPtRepository;
     private final BuoiHocRepository buoiHocRepository;
-
+private static final long THOI_LUONG_BUOI_PT_PHUT = 60;
     public BuoiPtService(
             BuoiPtRepository buoiPtRepository,
             HoiVienRepository hoiVienRepository,
@@ -113,40 +113,120 @@ public class BuoiPtService {
         }
 
         LocalDateTime thoiGianBatDau = request.getThoiGianBatDau();
+if (thoiGianBatDau == null
+        || !thoiGianBatDau.isAfter(LocalDateTime.now())) {
+    throw new BusinessException(
+            "INVALID_BOOKING_TIME",
+            "Thời gian đặt PT phải nằm trong tương lai",
+            HttpStatus.BAD_REQUEST
+    );
+}
 
-       
-        boolean ptDangDayLop = buoiHocRepository.existsPtDayLopAtTime(
-                pt.getMaPt(),
+LocalDateTime thoiGianKetThuc =
+        thoiGianBatDau.plusMinutes(THOI_LUONG_BUOI_PT_PHUT);
+
+// Chưa hỗ trợ buổi PT kéo dài sang ngày hôm sau
+if (!thoiGianBatDau.toLocalDate()
+        .equals(thoiGianKetThuc.toLocalDate())) {
+    throw new BusinessException(
+            "INVALID_BOOKING_DURATION",
+            "Thời gian buổi PT không được vượt sang ngày hôm sau",
+            HttpStatus.BAD_REQUEST
+    );
+}
+
+
+// 2. Kiểm tra PT có đang dạy lớp trong khoảng giờ này không
+boolean ptDangDayLop = buoiHocRepository.existsPtDayLopDuring(
+        pt.getMaPt(),
+        thoiGianBatDau.toLocalDate(),
+        thoiGianBatDau.toLocalTime(),
+        thoiGianKetThuc.toLocalTime()
+);
+
+if (ptDangDayLop) {
+    throw new BusinessException(
+            "PT_BUSY_TEACHING_CLASS",
+            "PT đang dạy lớp trong khoảng thời gian này",
+            HttpStatus.CONFLICT
+    );
+}
+
+
+// 3. Kiểm tra hội viên có lớp đã đăng ký bị trùng giờ không
+boolean hoiVienDangHocLop =
+        buoiHocRepository.existsHoiVienDangKyLopDuring(
+                hoiVien.getMaHv(),
                 thoiGianBatDau.toLocalDate(),
-                thoiGianBatDau.toLocalTime()
+                thoiGianBatDau.toLocalTime(),
+                thoiGianKetThuc.toLocalTime()
         );
 
-        if (ptDangDayLop) {
-            throw new BusinessException(
-                    "PT_BUSY_TEACHING_CLASS",
-                    "PT đang dạy lớp vào thời điểm này",
-                    HttpStatus.CONFLICT
+if (hoiVienDangHocLop) {
+    throw new BusinessException(
+            "MEMBER_BUSY_IN_CLASS",
+            "Bạn đã đăng ký lớp học trong khoảng thời gian này",
+            HttpStatus.CONFLICT
+    );
+}
+
+
+// 4. Kiểm tra PT đã có buổi PT khác bị chồng giờ chưa
+boolean ptDaCoLich = buoiPtRepository
+        .findByPt_MaPt(pt.getMaPt())
+        .stream()
+        .filter(buoi -> "Đã lên lịch".equals(buoi.getTrangThai()))
+        .anyMatch(buoi -> {
+            LocalDateTime batDauCu = buoi.getThoiGianBatDau();
+
+            LocalDateTime ketThucCu =
+                    batDauCu.plusMinutes(THOI_LUONG_BUOI_PT_PHUT);
+
+            return khoangThoiGianChongLan(
+                    thoiGianBatDau,
+                    thoiGianKetThuc,
+                    batDauCu,
+                    ketThucCu
             );
-        }
+        });
 
-       
-        boolean ptDaCoLich = buoiPtRepository
-                .findByPt_MaPtAndThoiGianBatDauBetween(
-                        pt.getMaPt(),
-                        thoiGianBatDau,
-                        thoiGianBatDau
-                )
-                .stream()
-                .anyMatch(buoi -> !"Bị hủy".equals(buoi.getTrangThai()));
+if (ptDaCoLich) {
+    throw new BusinessException(
+            "PT_ALREADY_BOOKED",
+            "PT đã có buổi tập khác trong khoảng thời gian này",
+            HttpStatus.CONFLICT
+    );
+}
 
-        if (ptDaCoLich) {
-            throw new BusinessException(
-                    "PT_ALREADY_BOOKED",
-                    "PT đã có lịch vào thời điểm này",
-                    HttpStatus.CONFLICT
+
+// 5. Kiểm tra chính hội viên đã có buổi PT khác bị chồng giờ chưa
+boolean hoiVienDaCoLich = buoiPtRepository
+        .findByHoiVien_MaHv(hoiVien.getMaHv())
+        .stream()
+        .filter(buoi -> "Đã lên lịch".equals(buoi.getTrangThai()))
+        .anyMatch(buoi -> {
+            LocalDateTime batDauCu = buoi.getThoiGianBatDau();
+
+            LocalDateTime ketThucCu =
+                    batDauCu.plusMinutes(THOI_LUONG_BUOI_PT_PHUT);
+
+            return khoangThoiGianChongLan(
+                    thoiGianBatDau,
+                    thoiGianKetThuc,
+                    batDauCu,
+                    ketThucCu
             );
-        }
+        });
 
+if (hoiVienDaCoLich) {
+    throw new BusinessException(
+            "MEMBER_ALREADY_BOOKED",
+            "Bạn đã có buổi PT khác trong khoảng thời gian này",
+            HttpStatus.CONFLICT
+    );
+}
+        
+ 
       
         LocalDate homNay = LocalDate.now();
 
@@ -472,6 +552,16 @@ public class BuoiPtService {
     BuoiPt saved = buoiPtRepository.save(buoiPt);
 
     return chuyenSangResponseDTO(saved);
+}
+
+private boolean khoangThoiGianChongLan(
+        LocalDateTime batDauA,
+        LocalDateTime ketThucA,
+        LocalDateTime batDauB,
+        LocalDateTime ketThucB
+) {
+    return batDauA.isBefore(ketThucB)
+            && batDauB.isBefore(ketThucA);
 }
 
     public List<BuoiPtResponseDTO> layDanhSachTatCa() {
